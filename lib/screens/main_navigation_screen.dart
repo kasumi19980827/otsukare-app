@@ -4,7 +4,9 @@ import 'package:otsukare_app/screens/post_screen.dart';
 import 'package:otsukare_app/screens/timeline_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({super.key});
+  final String nickname;
+
+  const MainNavigationScreen({super.key, required this.nickname});
 
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
@@ -15,13 +17,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   //    アプリ起動時は「投稿」を自動で選択した状態にする
   int _currentIndex = 1;
 
-  // 💡 IndexedStackを使うことで、タブを切り替えても各画面の状態
-  //    （入力中のテキストやスクロール位置など）が保持される
-  final List<Widget> _pages = const [
-    TimelineScreen(),
-    PostScreen(),
-    HomeScreen(),
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    // 💡 IndexedStackを使うことで、タブを切り替えても各画面の状態
+    //    （入力中のテキストやスクロール位置など）が保持される
+    _pages = [
+      const TimelineScreen(),
+      PostScreen(nickname: widget.nickname),
+      HomeScreen(nickname: widget.nickname),
+    ];
+  }
 
   void _onTabTapped(int index) {
     setState(() => _currentIndex = index);

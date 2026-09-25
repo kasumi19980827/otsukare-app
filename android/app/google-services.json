@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "334571748621",
+    "firebase_url": "https://otsukaresan-fec39-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "otsukaresan-fec39",
+    "storage_bucket": "otsukaresan-fec39.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:334571748621:android:c62abaac3bf0e9d573c444",
+        "android_client_info": {
+          "package_name": "com.example.otsukare_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOx0ejzQkYfseKnk-BeMNkchW_NAY5rYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
