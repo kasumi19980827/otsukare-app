@@ -25,7 +25,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     // 💡 IndexedStackを使うことで、タブを切り替えても各画面の状態
     //    （入力中のテキストやスクロール位置など）が保持される
     _pages = [
-      const TimelineScreen(),
+      TimelineScreen(nickname: widget.nickname),
       PostScreen(nickname: widget.nickname),
       HomeScreen(nickname: widget.nickname),
     ];
