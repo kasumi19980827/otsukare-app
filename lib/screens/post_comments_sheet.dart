@@ -72,6 +72,118 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
     }
   }
 
+  // 💡 他人のコメントへの通報（UGCモデレーション対応）
+  void _showReportCommentDialog({
+    required String commentId,
+    required String commentUid,
+    required String nickname,
+  }) {
+    final TextEditingController reasonController = TextEditingController();
+    final String? myUid = FirebaseAuth.instance.currentUser?.uid;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          bool isSubmitting = false;
+
+          Future<void> handleSubmit() async {
+            final String reason = reasonController.text.trim();
+            if (reason.isEmpty || isSubmitting || myUid == null) return;
+
+            setDialogState(() => isSubmitting = true);
+
+            try {
+              await FirebaseFirestore.instance
+                  .collection('reports')
+                  .add({
+                    'type': 'comment',
+                    'postId': widget.postId,
+                    'commentId': commentId,
+                    'reportedUid': commentUid,
+                    'reporterUid': myUid,
+                    'reason': reason,
+                    'createdAt': FieldValue.serverTimestamp(),
+                  })
+                  .timeout(_networkTimeout);
+
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('報告ありがとうございます。運営で確認いたします。')),
+                );
+              }
+            } catch (e) {
+              debugPrint('コメント通報エラー: $e');
+              setDialogState(() => isSubmitting = false);
+              if (dialogContext.mounted) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  const SnackBar(
+                    content: Text('通報の送信に失敗しました。もう一度お試しください。'),
+                    backgroundColor: Colors.redAccent,
+                  ),
+                );
+              }
+            }
+          }
+
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text(
+              '$nickname さんのコメントを通報',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            content: TextField(
+              controller: reasonController,
+              maxLines: 3,
+              maxLength: 300,
+              enabled: !isSubmitting,
+              decoration: InputDecoration(
+                hintText: '通報理由を入力...',
+                filled: true,
+                fillColor: Colors.grey[50],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () => Navigator.pop(dialogContext),
+                child: const Text(
+                  'キャンセル',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: isSubmitting ? null : handleSubmit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  foregroundColor: Colors.white,
+                ),
+                child: isSubmitting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('通報する'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   Future<void> _confirmAndDeleteComment(String commentId) async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
@@ -222,6 +334,7 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                                   ],
                                 ),
                               ),
+                              // 💡 自分のコメントなら削除、他人のコメントなら通報できるようにする
                               if (isMine)
                                 InkWell(
                                   onTap: () =>
@@ -231,6 +344,22 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                                     child: Icon(
                                       Icons.delete_outline,
                                       size: 18,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                )
+                              else if (myUid != null)
+                                InkWell(
+                                  onTap: () => _showReportCommentDialog(
+                                    commentId: docs[index].id,
+                                    commentUid: uid,
+                                    nickname: nickname,
+                                  ),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(4.0),
+                                    child: Icon(
+                                      Icons.flag_outlined,
+                                      size: 16,
                                       color: Colors.grey,
                                     ),
                                   ),

@@ -93,7 +93,7 @@ class _PostScreenState extends State<PostScreen> {
                 enabled: !_isSubmitting,
                 textAlignVertical: TextAlignVertical.top,
                 decoration: InputDecoration(
-                  hintText: 'お疲れさまでした！',
+                  hintText: 'お疲れさまでした！今日あった出来事を呟いてみよう！',
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
